@@ -3,15 +3,18 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     Break
 }
 
-$driveLetter = Read-Host -Prompt "Please specify the drive-letter you have the root of solr (c, d, or any other drive-letter). This is the drive-letter where the c:\solr directory exists."
-if ($driveLetter -eq "" -or $driveLetter.Length -gt 1) {
-    Write-Output "Switching to default driveletter c"
-    $driveLetter = "c"
-}
-
 $restartService = $true;
 $fix = "set SOLR_OPTS=%SOLR_OPTS% -Dlog4j2.formatMsgNoLookups=true"
-$files = Get-Childitem -Path "$($driveLetter):\solr" -Include solr.in.cmd -Recurse -File -ErrorAction SilentlyContinue
+
+$rootPath = "c:\solr"
+$altPath = Read-Host -Prompt "Leave empty and press enter if you have installed SOLR from the SIA under the default path (c:\solr) or specify the root folder."
+if ($altPath -ne "") {
+    Write-Output "Switching to rootpath $altPath"
+    $rootPath = $altPath
+}
+
+Write-Output "Going to search on $rootPath"
+$files = Get-Childitem -Path $rootPath -Include solr.in.cmd -Recurse -File -ErrorAction SilentlyContinue
 
 if ($files.Length -eq 0) {
     Write-Output "No solr.in.cmd files found."
