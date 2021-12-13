@@ -1,14 +1,12 @@
-$driveLetter = Read-Host -Prompt "Please specify the drive-letter you have the root of solr (c, d, or any other drive-letter). This is the drive-letter where the c:\solr directory exists."
-
-if ($driveLetter -eq "")
-{
-  $driveLetter = "c"
+if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {  
+    Write-Output "Please run this with administrator priviledges..."
+    Break
 }
 
-if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))  
-{  
-  Write-Output "Please run this with administrator priviledges..."
-  Break
+$driveLetter = Read-Host -Prompt "Please specify the drive-letter you have the root of solr (c, d, or any other drive-letter). This is the drive-letter where the c:\solr directory exists."
+if ($driveLetter -eq "" -or $driveLetter.Length -gt 1) {
+    Write-Output "Switching to default driveletter c"
+    $driveLetter = "c"
 }
 
 $restartService = $true;
