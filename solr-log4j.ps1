@@ -1,3 +1,10 @@
+$driveLetter = Read-Host -Prompt "Please specify the drive-letter you have the root of solr (c, d, or any other drive-letter). This is the drive-letter where the c:\solr directory exists."
+
+if ($driveLetter -eq "")
+{
+  $driveLetter = "c"
+}
+
 if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator"))  
 {  
   Write-Output "Please run this with administrator priviledges..."
@@ -6,14 +13,14 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 
 $restartService = $true;
 $fix = "set SOLR_OPTS=%SOLR_OPTS% -Dlog4j2.formatMsgNoLookups=true"
-$files = Get-Childitem -Path "c:\solr" -Include solr.in.cmd -Recurse -File -ErrorAction SilentlyContinue
+$files = Get-Childitem -Path "$($driveLetter):\solr" -Include solr.in.cmd -Recurse -File -ErrorAction SilentlyContinue
 
 if ($files.Length -eq 0) {
     Write-Output "No solr.in.cmd files found."
     return
 }
 
-foreach ($file in $findFiles) {
+foreach ($file in $files) {
     try {        
         $serviceName = $file.FullName.Split('\')[2]
 
