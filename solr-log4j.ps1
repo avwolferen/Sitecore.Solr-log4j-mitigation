@@ -6,15 +6,8 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 $restartService = $true;
 $fix = "set SOLR_OPTS=%SOLR_OPTS% -Dlog4j2.formatMsgNoLookups=true"
 
-$rootPath = "c:\solr"
-$altPath = Read-Host -Prompt "Leave empty and press enter if you have installed SOLR from the SIA under the default path (c:\solr) or specify the root folder."
-if ($altPath -ne "") {
-    Write-Output "Switching to rootpath $altPath"
-    $rootPath = $altPath
-}
-
-Write-Output "Going to search on $rootPath"
-$files = Get-Childitem -Path $rootPath -Include solr.in.cmd -Recurse -File -ErrorAction SilentlyContinue
+Write-Output "Going to search on c:"
+$files = (Get-CimInstance -Query "Select * from CIM_DataFile Where ((Drive = 'C:') AND (FileName = 'solr.in') AND (Extension = 'cmd'))" | Select-Object Name)
 
 if ($files.Length -eq 0) {
     Write-Output "No solr.in.cmd files found."
@@ -23,18 +16,18 @@ if ($files.Length -eq 0) {
 
 foreach ($file in $files) {
     try {        
-        $serviceName = $file.FullName.Split('\')[2]
+        $serviceName = $file.Name.Split('\')[2]
 
-        $contents = Get-Content $file.FullName
+        $contents = Get-Content $file.Name
         if ($contents.Contains($fix)) {
             Write-Output "$serviceName is already patched!"
         }
         else {
-            Write-Output "$serviceName patching file $($file.FullName)"
+            Write-Output "$serviceName patching file $($file.Name)"
 
             $contents += $fix
 
-            Set-Content -Path $file.FullName -Value $contents
+            Set-Content -Path $file.Name -Value $contents
 
             if ($restartService) {
 
