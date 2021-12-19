@@ -4,14 +4,13 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 }
 
 $driveLetter = Read-Host -Prompt "Please specify the drive-letter you have the root of solr (c, d, or any other drive-letter). This is the drive-letter where the solr is installed."
-if ($driveLetter -eq "")
-{
-  $driveLetter = "c"
+if ($driveLetter -eq "") {
+    $driveLetter = "c"
 }
 
 Write-Output "Looking for Solr on your $($driveLetter): drive... May take a while to find those..."
 # Searching for solr.in.cmd files
-$files = (Get-CimInstance -Query "Select * from CIM_DataFile Where ((Drive = '$($driveLetter):') AND (FileName = 'solr.in') AND (Extension = 'cmd'))" | Select-Object Name | foreach {$_.Name})
+$files = (Get-CimInstance -Query "Select * from CIM_DataFile Where ((Drive = '$($driveLetter):') AND (FileName = 'solr.in') AND (Extension = 'cmd'))" | Select-Object Name | foreach { $_.Name })
 
 if ($files.Length -eq 0) {
     Write-Output "No solr.in.cmd files found."
@@ -30,14 +29,18 @@ $null = New-Item -ItemType Directory -Force -Path $tempFolder
 $log2j = "https://dlcdn.apache.org/logging/log4j/$newVersion/apache-log4j-$newVersion-bin.zip"
 $log2jFileName = $log2j.Split('/')[$log2j.Split('/').Length - 1]
 $log2jZip = Join-Path $tempFolder $log2jFileName
-$log2jHash = Join-Path $tempFolder "$($log2jFileName).sha512"
-
+$log2jHash = ""
+if ($newVersion -eq "2.17.0") {
+    $log2jHash = "7581F52C6139D7F6961785A1C91D7D1EE68569D6CE70E19E4C17C6FB84E6AFA11A6A0F35A2056C6F6B672AC536352AE840C82BA4D78D3927C14363E8C40EAA08"
+}
+elseif ($newVersion -eq "2.x.0") {
+    $log2jHash = "INSERT HASH HERE FROM FILE LIKE https://dlcdn.apache.org/logging/log4j/2.17.0/apache-log4j-2.17.0-src.zip.sha512"
+}
 Invoke-WebRequest -Uri $log2j -OutFile $log2jZip
-Invoke-WebRequest -Uri "$($log2j).sha512" -OutFile $log2jHash
 
 Write-Output "Verifying downloaded $log2jFileName"
 $hashFromZip = Get-FileHash $log2jZip -Algorithm SHA512
-if ((Get-Content -Path $log2jHash) -ne "$($hashFromZip.Hash.ToLowerInvariant())  $log2jFileName") {
+if ($log2jHash -ne $hashFromZip.Hash.ToUpperInvariant()) {
     Write-Error "Hash does not match, please verify your downloads!"
     break
 }
@@ -83,13 +86,14 @@ foreach ($file in $files) {
             }
 
             if ($true -eq $updateSolr) {
-                Write-Output "Updateing Log4j $newVersion to Solr in $solrRootDirectory needs update to Log4j"
+                Write-Output "Updating Log4j $newVersion to Solr in $solrRootDirectory needs update to Log4j"
                 foreach ($oldFile in $solrLog2jFiles) {
                     $filenameParts = $oldFile.Name.Replace(".jar", "").Split('-');
                     $oldVersion = $filenameParts[$filenameParts.Length - 1]
-                
+
                     Write-Output "Replacing $($oldFile.Name) from $oldVersion with $newVersion"
-                    Copy-Item -Path (Join-Path $log2jExtract $($oldFile.Name.Replace($oldVersion, $newVersion))) -Destination $solrLog2jPath
+                    Copy-Item -Path (Join-Path $log2jExtract $($oldFile.Name.Replace($oldVersion, $newVersion))) -Destination $solrLog2jPath -Force
+
                     Remove-Item -Path $oldFile.FullName
                 }        
             }
@@ -112,9 +116,10 @@ foreach ($file in $files) {
                 foreach ($oldFile in $prometheusLog2jFiles) {
                     $filenameParts = $oldFile.Name.Replace(".jar", "").Split('-');
                     $oldVersion = $filenameParts[$filenameParts.Length - 1]
-                
+
                     Write-Output "Replacing $($oldFile.Name) from $oldVersion with $newVersion"
-                    Copy-Item -Path (Join-Path $log2jExtract $($oldFile.Name.Replace($oldVersion, $newVersion))) -Destination $prometheusLog2jPath
+                    Copy-Item -Path (Join-Path $log2jExtract $($oldFile.Name.Replace($oldVersion, $newVersion))) -Destination $prometheusLog2jPath -Force
+
                     Remove-Item -Path $oldFile.FullName
                 }        
             }
