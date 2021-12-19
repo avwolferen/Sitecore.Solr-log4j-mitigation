@@ -3,9 +3,15 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     Break
 }
 
-Write-Output "Looking for Solr on your c: drive... May take a while to find those..."
+$driveLetter = Read-Host -Prompt "Please specify the drive-letter you have the root of solr (c, d, or any other drive-letter). This is the drive-letter where the solr is installed."
+if ($driveLetter -eq "")
+{
+  $driveLetter = "c"
+}
+
+Write-Output "Looking for Solr on your $($driveLetter): drive... May take a while to find those..."
 # Searching for solr.in.cmd files
-$files = (Get-CimInstance -Query "Select * from CIM_DataFile Where ((Drive = 'C:') AND (FileName = 'solr.in') AND (Extension = 'cmd'))" | Select-Object Name | foreach {$_.Name})
+$files = (Get-CimInstance -Query "Select * from CIM_DataFile Where ((Drive = '$($driveLetter):') AND (FileName = 'solr.in') AND (Extension = 'cmd'))" | Select-Object Name | foreach {$_.Name})
 
 if ($files.Length -eq 0) {
     Write-Output "No solr.in.cmd files found."
