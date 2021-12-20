@@ -4,9 +4,9 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 }
 
 # $driveLetter = Read-Host -Prompt "Please specify the drive-letter you have the root of solr (c, d, or any other drive-letter). This is the drive-letter where the solr is installed."
-# if ($driveLetter -eq "") {
+if ($driveLetter -eq "") {
     $driveLetter = "c"
-#}
+}
 
 Write-Output "Looking for Solr on your $($driveLetter): drive... May take a while to find those..."
 # Searching for solr.in.cmd files
