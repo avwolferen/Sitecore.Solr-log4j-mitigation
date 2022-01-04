@@ -38,6 +38,8 @@ else {
     $log2jHash = (Invoke-WebRequest -Uri "$($log2j).sha512").Content.Split(' ')[0].ToUpperInvariant()
 }
 
+Write-Output "Hash to validate against is $log2jHash"
+
 if ($log2jHash.Contains(' ')) {
  Write-Error "Possible the filehash file $($log2j).sha512 is in a different and not understood formatting"
  break 
@@ -48,6 +50,7 @@ Invoke-WebRequest -Uri $log2j -OutFile $log2jZip
 
 Write-Output "Verifying downloaded $log2jFileName"
 $hashFromZip = Get-FileHash $log2jZip -Algorithm SHA512
+Write-Output "SHA512 FileHash for $log2jZip is $($hashFromZip.Hash.ToUpperInvariant())"
 if ($log2jHash -ne $hashFromZip.Hash.ToUpperInvariant()) {
     Write-Error "Hash does not match, please verify your downloads!"
     break
@@ -113,11 +116,11 @@ foreach ($file in $files) {
             $prometheusLog2jFiles = (Get-ChildItem -Path $prometheusLog2jPath -Filter "log4j-*.jar" | Where-Object -FilterScript { $_.Name -notmatch "$newVersion.jar" })
 
             if ($prometheusLog2jFiles.Length -gt 0) {
-                Write-Output "Premetheus in Solr  $solrRootDirectory needs update to Log4j $newVersion"
+                Write-Output "Prometheus in Solr  $solrRootDirectory needs update to Log4j $newVersion"
                 $updatePrometheus = $true
             }
             else {
-                Write-Output "Premetheus in Solr  $solrRootDirectory looks good!"
+                Write-Output "Prometheus in Solr  $solrRootDirectory looks good!"
             }
 
             if ($true -eq $updatePrometheus) {

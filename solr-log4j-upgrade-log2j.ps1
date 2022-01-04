@@ -1,1 +1,1 @@
-## file has been replaced by solr-log4j-autoupdate.ps1
+.\solr-log4j-autoupdate.ps1
