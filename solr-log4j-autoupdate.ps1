@@ -18,7 +18,7 @@ if ($files.Length -eq 0) {
 }
 
 # Download log2j 
-$newVersion = "2.17.0"
+$newVersion = "2.17.1"
 $tempFolder = Join-Path $PSScriptRoot "temp"
 if (Test-Path $tempFolder) {
     $null = Remove-Item $tempFolder -Recurse -Force -Confirm:$false
@@ -26,16 +26,24 @@ if (Test-Path $tempFolder) {
 $null = New-Item -ItemType Directory -Force -Path $tempFolder
 
 ## Download and verify
-$log2j = "https://dlcdn.apache.org/logging/log4j/$newVersion/apache-log4j-$newVersion-bin.zip"
+$log2j = "https://archive.apache.org/dist/logging/log4j/$newVersion/apache-log4j-$newVersion-bin.zip"
 $log2jFileName = $log2j.Split('/')[$log2j.Split('/').Length - 1]
 $log2jZip = Join-Path $tempFolder $log2jFileName
 $log2jHash = ""
 if ($newVersion -eq "2.17.0") {
+    ## 2.17.0 has a incompatible formatting of the hash
     $log2jHash = "7581F52C6139D7F6961785A1C91D7D1EE68569D6CE70E19E4C17C6FB84E6AFA11A6A0F35A2056C6F6B672AC536352AE840C82BA4D78D3927C14363E8C40EAA08"
 }
-elseif ($newVersion -eq "2.x.0") {
-    $log2jHash = "INSERT HASH HERE FROM FILE LIKE https://dlcdn.apache.org/logging/log4j/2.17.0/apache-log4j-2.17.0-src.zip.sha512"
+else {
+    $log2jHash = (Invoke-WebRequest -Uri "$($log2j).sha512").Content.Split(' ')[0].ToUpperInvariant()
 }
+
+if ($log2jHash.Contains(' ')) {
+ Write-Error "Possible the filehash file $($log2j).sha512 is in a different and not understood formatting"
+ break 
+}
+
+Write-Output "Downloading $log2j"
 Invoke-WebRequest -Uri $log2j -OutFile $log2jZip
 
 Write-Output "Verifying downloaded $log2jFileName"
