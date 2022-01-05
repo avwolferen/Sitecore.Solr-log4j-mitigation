@@ -35,7 +35,7 @@ if ($newVersion -eq "2.17.0") {
     $log2jHash = "7581F52C6139D7F6961785A1C91D7D1EE68569D6CE70E19E4C17C6FB84E6AFA11A6A0F35A2056C6F6B672AC536352AE840C82BA4D78D3927C14363E8C40EAA08"
 }
 else {
-    $log2jHash = (Invoke-WebRequest -Uri "$($log2j).sha512").Content.Split(' ')[0].ToUpperInvariant()
+    $log2jHash = (Invoke-WebRequest -Uri "$($log2j).sha512" -UseBasicParsing).Content.Split(' ')[0].ToUpperInvariant()
 }
 
 Write-Output "Hash to validate against is $log2jHash"
@@ -46,7 +46,7 @@ if ($log2jHash.Contains(' ')) {
 }
 
 Write-Output "Downloading $log2j"
-Invoke-WebRequest -Uri $log2j -OutFile $log2jZip
+Invoke-WebRequest -Uri $log2j -UseBasicParsing -OutFile $log2jZip 
 
 Write-Output "Verifying downloaded $log2jFileName"
 $hashFromZip = Get-FileHash $log2jZip -Algorithm SHA512
