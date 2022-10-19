@@ -19,7 +19,7 @@ if ($files.Length -eq 0) {
 
 # Download log2j 
 $newVersion = "2.17.1"
-$tempFolder = Join-Path $PSScriptRoot "temp"
+$tempFolder = "$($driveLetter):\temp\temp"
 if (Test-Path $tempFolder) {
     $null = Remove-Item $tempFolder -Recurse -Force -Confirm:$false
 }
